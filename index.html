@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tweets Word Cloud Generator</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Tweets Word Cloud Generator">
+  <meta name="author" content="Veeresh Taranalli">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Tweets Word Cloud Generator</h1>
+    <h2></h2>
+    <p>Veeresh Taranalli<br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Motivation, Approach and User Interface</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>A word cloud visualization of a given Twitter user&#39;s tweets. </li>
+<li>Useful for getting a simple idea about the user&#39;s areas of interest and preferences.</li>
+<li>Some customization allowed for the Shiny App user to explore. </li>
+<li>Use the <code>twitteR</code> package to get tweets corresponding to a user&#39;s timeline. </li>
+<li>Use the <code>tm</code> package to clean up the obtained tweets and extract complete words. </li>
+<li>Use the <code>wordcloud</code> package to plot the corresponding wordcloud thus obtained.</li>
+<li>User Interface consists of the following parameters: 
+
+<ul>
+<li><code>Twitter UserName</code> </li>
+<li><code>Number of Previous Tweets?</code></li>
+<li><code>Include Re-tweets?</code></li>
+<li><code>Include Replies?</code></li>
+<li><code>Color Palette</code></li>
+</ul></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>An Example using R Code</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>We create a tweet wordcloud from <code>hackernews</code> twitter timeline as follows. </p>
+
+<pre><code class="r">library(twitteR)
+library(tm)
+library(wordcloud)
+library(RColorBrewer)
+load(&quot;twitter_tokens&quot;)
+setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
+
+user_name &lt;- &quot;hackernews&quot;
+number_of_tweets &lt;- 100
+exclude_replies &lt;- FALSE
+include_retweets &lt;- FALSE
+tweets_list &lt;- userTimeline(user_name, n = number_of_tweets, includeRts = include_retweets, 
+                            excludeReplies = exclude_replies)
+tweets_df &lt;- twListToDF(tweets_list)
+# build a corpus, and specify the source to be character vectors 
+tweets_Corpus &lt;- Corpus(VectorSource(tweets_df$text))
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <article data-timings="">
+    <pre><code class="r"># plot word cloud
+wordcloud(words = names(word.freq), freq = word.freq, min.freq = 3,
+          random.order = F, colors = pal, scale=c(4,.2))
+</code></pre>
+
+<p><img src="assets/fig/unnamed-chunk-5-1.png" alt="plot of chunk unnamed-chunk-5"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Project Code</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>The complete source code <code>ui.R</code> and <code>server.R</code> files for the Shiny App are available at <a href="https://github.com/veeresht/ShinyAppCode">https://github.com/veeresht/ShinyAppCode</a></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Motivation, Approach and User Interface'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='An Example using R Code'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='NA'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Project Code'>
+         4
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

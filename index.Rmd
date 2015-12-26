@@ -1,0 +1,120 @@
+---
+title       : Tweets Word Cloud Generator
+subtitle    : 
+author      : Veeresh Taranalli
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+## Motivation, Approach and User Interface
+
+* A word cloud visualization of a given Twitter user's tweets. 
+* Useful for getting a simple idea about the user's areas of interest and preferences.
+* Some customization allowed for the Shiny App user to explore. 
+* Use the `twitteR` package to get tweets corresponding to a user's timeline. 
+* Use the `tm` package to clean up the obtained tweets and extract complete words. 
+* Use the `wordcloud` package to plot the corresponding wordcloud thus obtained.
+* User Interface consists of the following parameters: 
+    - `Twitter UserName` 
+    - `Number of Previous Tweets?`
+    - `Include Re-tweets?`
+    - `Include Replies?`
+    - `Color Palette`
+
+---
+
+## An Example using R Code
+
+We create a tweet wordcloud from `hackernews` twitter timeline as follows. 
+
+```{r results='hide', warning=FALSE, message=FALSE}
+library(twitteR)
+library(tm)
+library(wordcloud)
+library(RColorBrewer)
+load("twitter_tokens")
+setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
+
+user_name <- "hackernews"
+number_of_tweets <- 100
+exclude_replies <- FALSE
+include_retweets <- FALSE
+tweets_list <- userTimeline(user_name, n = number_of_tweets, includeRts = include_retweets, 
+                            excludeReplies = exclude_replies)
+tweets_df <- twListToDF(tweets_list)
+# build a corpus, and specify the source to be character vectors 
+tweets_Corpus <- Corpus(VectorSource(tweets_df$text))
+```
+
+```{r echo=FALSE}
+# convert to lower 
+tweets_Corpus <- tm_map(tweets_Corpus, content_transformer(tolower))
+# remove URLs
+removeURL <- function(x) gsub("http[^[:space:]]*", "", x)
+tweets_Corpus <- tm_map(tweets_Corpus, content_transformer(removeURL)) 
+# remove anything other than english letters or space
+removeNumPunct <- function(x) gsub("[^[:alpha:][:space:]]*", "", x)
+tweets_Corpus <- tm_map(tweets_Corpus, content_transformer(removeNumPunct))
+# remove punctuation
+tweets_Corpus <- tm_map(tweets_Corpus, removePunctuation)
+# remove numbers
+tweets_Corpus <- tm_map(tweets_Corpus, removeNumbers)
+# # add extra stop words:
+tweetsStopwords <- c(stopwords('english'), "like", "absolutely", "want", 
+                         "ive", "im", "go", "seen", "via", "get", "amp", "will") 
+# remove stopwords from corpus
+tweets_Corpus <- tm_map(tweets_Corpus, removeWords, tweetsStopwords, lazy=TRUE)
+# remove extra whitespace
+tweets_Corpus <- tm_map(tweets_Corpus, stripWhitespace, lazy=TRUE)
+```
+
+```{r echo=FALSE}
+# Keep a copy
+tweets_CorpusCopy <- tweets_Corpus
+# Extract Stem Words
+tweets_Corpus <- tm_map(tweets_Corpus, stemDocument)
+stemCompletion2 <- function(x, dictionary) {
+            x <- unlist(strsplit(as.character(x), " "))
+            # Unexpectedly, stemCompletion completes an empty string to
+            # a word in dictionary. Remove empty string to avoid above issue. 
+            x <- x[x != ""]
+            x <- stemCompletion(x, dictionary=dictionary)
+            x <- paste(x, sep="", collapse=" ") 
+            PlainTextDocument(stripWhitespace(x))
+        }
+        
+tweets_Corpus <- tm_map(tweets_Corpus, content_transformer(stemCompletion2), 
+                                dictionary=tweets_CorpusCopy, lazy=TRUE)
+tweets_Corpus <- Corpus(VectorSource(tweets_Corpus))
+tdm <- TermDocumentMatrix(tweets_Corpus, control = list(wordLengths = c(1, Inf)))
+```
+
+---
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+m <- as.matrix(tdm)
+# calculate the frequency of words and sort it by frequency 
+word.freq <- sort(rowSums(m), decreasing = T)
+# colors
+pal <- brewer.pal(9, "BuGn")
+pal <- pal[-(1:4)]
+```
+
+```{r}
+# plot word cloud
+wordcloud(words = names(word.freq), freq = word.freq, min.freq = 3,
+          random.order = F, colors = pal, scale=c(4,.2))
+
+```
+
+---
+
+## Project Code
+
+* The complete source code `ui.R` and `server.R` files for the Shiny App are available at https://github.com/veeresht/ShinyAppCode
+
