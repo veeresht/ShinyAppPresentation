@@ -73,5 +73,7 @@ wordcloud(words = names(word.freq), freq = word.freq, min.freq = 3,
 
 ## Project Code
 
-* The complete source code `ui.R` and `server.R` files for the Shiny App are available at https://github.com/veeresht/ShinyAppCode
+* The complete source code `ui.R` and `server.R` files for the Shiny App are available at http://github.com/veeresht/ShinyAppCode
+
+* The Shiny App is deployed at http://veeresht.shinyapps.io/shiny_app
 
